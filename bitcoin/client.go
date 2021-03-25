@@ -50,7 +50,7 @@ const (
 	// * 0 returns the hex representation
 	// * 1 returns the JSON representation
 	// * 2 returns the JSON representation with included Transaction data
-	blockVerbosity = 2
+	blockVerbosity = true
 )
 
 type requestMethod string
