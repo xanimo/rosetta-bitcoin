@@ -22,32 +22,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/coinbase/rosetta-bitcoin/bitcoin"
+	"github.com/coinbase/rosetta-bitcoin/configuration"
+	"github.com/rosetta-dogecoin/rosetta-dogecoin/dogecoin"
 
-	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/coinbase/rosetta-sdk-go/storage/encoder"
 	"github.com/coinbase/rosetta-sdk-go/types"
 )
 
-// Mode is the setting that determines if
-// the implementation is "online" or "offline".
-type Mode string
-
 const (
-	// Online is when the implementation is permitted
-	// to make outbound connections.
-	Online Mode = "ONLINE"
-
-	// Offline is when the implementation is not permitted
-	// to make outbound connections.
-	Offline Mode = "OFFLINE"
-
-	// Mainnet is the Bitcoin Mainnet.
-	Mainnet string = "MAINNET"
-
-	// Testnet is Bitcoin Testnet3.
-	Testnet string = "TESTNET"
-
 	// mainnetConfigPath is the path of the Bitcoin
 	// configuration file for mainnet.
 	mainnetConfigPath = "/app/bitcoin-mainnet.conf"
@@ -85,59 +67,22 @@ const (
 	// allFilePermissions specifies anyone can do anything
 	// to the file.
 	allFilePermissions = 0777
-
-	// ModeEnv is the environment variable read
-	// to determine mode.
-	ModeEnv = "MODE"
-
-	// NetworkEnv is the environment variable
-	// read to determine network.
-	NetworkEnv = "NETWORK"
-
-	// PortEnv is the environment variable
-	// read to determine the port for the Rosetta
-	// implementation.
-	PortEnv = "PORT"
 )
-
-// PruningConfiguration is the configuration to
-// use for pruning in the indexer.
-type PruningConfiguration struct {
-	Frequency time.Duration
-	Depth     int64
-	MinHeight int64
-}
-
-// Configuration determines how
-type Configuration struct {
-	Mode                   Mode
-	Network                *types.NetworkIdentifier
-	Params                 *chaincfg.Params
-	Currency               *types.Currency
-	GenesisBlockIdentifier *types.BlockIdentifier
-	Port                   int
-	RPCPort                int
-	ConfigPath             string
-	Pruning                *PruningConfiguration
-	IndexerPath            string
-	BitcoindPath           string
-	Compressors            []*encoder.CompressorEntry
-}
 
 // LoadConfiguration attempts to create a new Configuration
 // using the ENVs in the environment.
-func LoadConfiguration(baseDirectory string) (*Configuration, error) {
-	config := &Configuration{}
-	config.Pruning = &PruningConfiguration{
+func LoadConfiguration(baseDirectory string) (*configuration.Configuration, error) {
+	config := &configuration.Configuration{}
+	config.Pruning = &configuration.PruningConfiguration{
 		Frequency: pruneFrequency,
 		Depth:     pruneDepth,
 		MinHeight: minPruneHeight,
 	}
 
-	modeValue := Mode(os.Getenv(ModeEnv))
+	modeValue := configuration.Mode(os.Getenv(configuration.ModeEnv))
 	switch modeValue {
-	case Online:
-		config.Mode = Online
+	case configuration.Online:
+		config.Mode = configuration.Online
 		config.IndexerPath = path.Join(baseDirectory, indexerPath)
 		if err := ensurePathExists(config.IndexerPath); err != nil {
 			return nil, fmt.Errorf("%w: unable to create indexer path", err)
@@ -147,24 +92,24 @@ func LoadConfiguration(baseDirectory string) (*Configuration, error) {
 		if err := ensurePathExists(config.BitcoindPath); err != nil {
 			return nil, fmt.Errorf("%w: unable to create bitcoind path", err)
 		}
-	case Offline:
-		config.Mode = Offline
+	case configuration.Offline:
+		config.Mode = configuration.Offline
 	case "":
 		return nil, errors.New("MODE must be populated")
 	default:
 		return nil, fmt.Errorf("%s is not a valid mode", modeValue)
 	}
 
-	networkValue := os.Getenv(NetworkEnv)
+	networkValue := os.Getenv(configuration.NetworkEnv)
 	switch networkValue {
-	case Mainnet:
+	case configuration.Mainnet:
 		config.Network = &types.NetworkIdentifier{
-			Blockchain: bitcoin.Blockchain,
-			Network:    bitcoin.MainnetNetwork,
+			Blockchain: dogecoin.Blockchain,
+			Network:    dogecoin.MainnetNetwork,
 		}
-		config.GenesisBlockIdentifier = bitcoin.MainnetGenesisBlockIdentifier
-		config.Params = bitcoin.MainnetParams
-		config.Currency = bitcoin.MainnetCurrency
+		config.GenesisBlockIdentifier = dogecoin.MainnetGenesisBlockIdentifier
+		config.Params = dogecoin.MainnetParams
+		config.Currency = dogecoin.MainnetCurrency
 		config.ConfigPath = mainnetConfigPath
 		config.RPCPort = mainnetRPCPort
 		config.Compressors = []*encoder.CompressorEntry{
@@ -173,14 +118,14 @@ func LoadConfiguration(baseDirectory string) (*Configuration, error) {
 				DictionaryPath: mainnetTransactionDictionary,
 			},
 		}
-	case Testnet:
+	case configuration.Testnet:
 		config.Network = &types.NetworkIdentifier{
-			Blockchain: bitcoin.Blockchain,
-			Network:    bitcoin.TestnetNetwork,
+			Blockchain: dogecoin.Blockchain,
+			Network:    dogecoin.TestnetNetwork,
 		}
-		config.GenesisBlockIdentifier = bitcoin.TestnetGenesisBlockIdentifier
-		config.Params = bitcoin.TestnetParams
-		config.Currency = bitcoin.TestnetCurrency
+		config.GenesisBlockIdentifier = dogecoin.TestnetGenesisBlockIdentifier
+		config.Params = dogecoin.TestnetParams
+		config.Currency = dogecoin.TestnetCurrency
 		config.ConfigPath = testnetConfigPath
 		config.RPCPort = testnetRPCPort
 		config.Compressors = []*encoder.CompressorEntry{
@@ -195,7 +140,7 @@ func LoadConfiguration(baseDirectory string) (*Configuration, error) {
 		return nil, fmt.Errorf("%s is not a valid network", networkValue)
 	}
 
-	portValue := os.Getenv(PortEnv)
+	portValue := os.Getenv(configuration.PortEnv)
 	if len(portValue) == 0 {
 		return nil, errors.New("PORT must be populated")
 	}
