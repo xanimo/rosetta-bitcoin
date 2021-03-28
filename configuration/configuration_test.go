@@ -20,8 +20,8 @@ import (
 	"path"
 	"testing"
 
-	"github.com/coinbase/rosetta-bitcoin/bitcoin"
 	"github.com/coinbase/rosetta-bitcoin/configuration"
+	"github.com/rosetta-dogecoin/rosetta-dogecoin/dogecoin"
 
 	"github.com/coinbase/rosetta-sdk-go/storage/encoder"
 	"github.com/coinbase/rosetta-sdk-go/types"
@@ -57,12 +57,12 @@ func TestLoadConfiguration(t *testing.T) {
 			cfg: &configuration.Configuration{
 				Mode: configuration.Online,
 				Network: &types.NetworkIdentifier{
-					Network:    bitcoin.MainnetNetwork,
-					Blockchain: bitcoin.Blockchain,
+					Network:    dogecoin.MainnetNetwork,
+					Blockchain: dogecoin.Blockchain,
 				},
-				Params:                 bitcoin.MainnetParams,
-				Currency:               bitcoin.MainnetCurrency,
-				GenesisBlockIdentifier: bitcoin.MainnetGenesisBlockIdentifier,
+				Params:                 dogecoin.MainnetParams,
+				Currency:               dogecoin.MainnetCurrency,
+				GenesisBlockIdentifier: dogecoin.MainnetGenesisBlockIdentifier,
 				Port:                   1000,
 				RPCPort:                mainnetRPCPort,
 				ConfigPath:             mainnetConfigPath,
@@ -86,12 +86,12 @@ func TestLoadConfiguration(t *testing.T) {
 			cfg: &configuration.Configuration{
 				Mode: configuration.Online,
 				Network: &types.NetworkIdentifier{
-					Network:    bitcoin.TestnetNetwork,
-					Blockchain: bitcoin.Blockchain,
+					Network:    dogecoin.TestnetNetwork,
+					Blockchain: dogecoin.Blockchain,
 				},
-				Params:                 bitcoin.TestnetParams,
-				Currency:               bitcoin.TestnetCurrency,
-				GenesisBlockIdentifier: bitcoin.TestnetGenesisBlockIdentifier,
+				Params:                 dogecoin.TestnetParams,
+				Currency:               dogecoin.TestnetCurrency,
+				GenesisBlockIdentifier: dogecoin.TestnetGenesisBlockIdentifier,
 				Port:                   1000,
 				RPCPort:                testnetRPCPort,
 				ConfigPath:             testnetConfigPath,
